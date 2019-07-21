@@ -22,6 +22,7 @@ import localforage from './localforage';
 const ControlSaveTiles = L.Control.extend(
   /** @lends ControlSaveTiles */ {
     options: {
+      renderButtons: true,
       position: 'topleft',
       saveText: '+',
       rmText: '-',
@@ -117,11 +118,18 @@ const ControlSaveTiles = L.Control.extend(
     setZoomlevels(zoomlevels) {
       this.options.zoomlevels = zoomlevels;
     },
+    /**
+     * @return {HTMLElement|null}
+     */
     onAdd() {
-      const container = L.DomUtil.create('div', 'savetiles leaflet-bar');
       const { options } = this;
-      this._createButton(options.saveText, 'savetiles', container, this._saveTiles);
+      if (!options.renderButtons) {
+        return null;
+      }
+      const container = L.DomUtil.create('div', 'savetiles leaflet-bar');
+      this._createButton(options.saveText, 'savetiles', container, this.saveTiles);
       this._createButton(options.rmText, 'rmtiles', container, this._rmTiles);
+
       return container;
     },
     _createButton(html, className, container, fn) {
@@ -139,10 +147,13 @@ const ControlSaveTiles = L.Control.extend(
     },
     /**
      * starts processing tiles
-     * @private
+     * Zoomlevels to save are taken from:
+     * * options.saveWhatYouSee
+     * * options.zoomlevels
+     * * current zoom of map
      * @return {void}
      */
-    _saveTiles() {
+    saveTiles() {
       let bounds;
       let tiles = [];
       // minimum zoom to prevent the user from saving the whole world
@@ -235,7 +246,7 @@ const ControlSaveTiles = L.Control.extend(
       };
     },
     /**
-     * [_saveTile description]
+     * Save a single tile
      * @private
      * @param  {string} tileUrl save key
      * @param  {blob} blob    [description]
@@ -291,6 +302,7 @@ const ControlSaveTiles = L.Control.extend(
  * when saving tiles with saveWhatYouSee. Default 19
  * @property {boolean} [options.saveWhatYouSee] save the tiles that you see
  * on screen plus deeper zooms, ignores zoomLevels options. Default false
+ * @property {boolean} [options.renderButtons] Render control buttons on the map, default true
  * @property {function} [options.confirm] function called before confirm, default null.
  * Args of function are ControlStatus and callback.
  * @property {function} [options.confirmRemoval] function called before confirm, default null
